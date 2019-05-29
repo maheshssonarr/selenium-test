@@ -28,6 +28,10 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
 
 
 public abstract class TestBase {
@@ -105,55 +109,40 @@ public abstract class TestBase {
 	 */
 	private static void initDriver(){
 
-		FirefoxProfile profile = new FirefoxProfile();
-
-		DesiredCapabilities dc=new DesiredCapabilities();
-		dc.setCapability("disable-popup-blocking", false);
-		dc.setCapability(CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR,UnexpectedAlertBehaviour.ACCEPT);
-		dc.setCapability(FirefoxDriver.PROFILE, profile);
-
-		profile.setPreference("browser.download.folderList", 2);
-		profile.setPreference("browser.download.manager.showWhenStarting", false);
-		profile.setPreference("browser.download.dir", System.getProperty("user.dir")+ File.separator +"Download");
-		profile.setPreference("browser.download.downloadDir", System.getProperty("user.dir")+ File.separator +"Download");
-		profile.setPreference("browser.download.defaultFolder", System.getProperty("user.dir")+ File.separator +"Download");
-		profile.setPreference("browser.download.manager.closeWhenDone", true);
-		profile.setPreference("pdfjs.disabled", true);
-		profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/zip,text/csv,application/msword,application/excel,application/pdf," +
-				"application/vnd.ms-excel,application/msword,application/unknown,application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-
-		if(config.getProperty("browser").equalsIgnoreCase("Firefox") ||config.getProperty("browser").equalsIgnoreCase("FF") ){
-			System.setProperty("webdriver.gecko.driver", System.getProperty("user.dir")+ File.separator+"drivers"+ File.separator  +"geckodriver");
-			driver = new FirefoxDriver(profile);
-			log.info(config.getProperty("browser")+" driver is initialized..");
+		URL hubUrl = null;
+		try {
+			hubUrl = new URL("http://localhost:4444/wd/hub");
+		} catch (MalformedURLException e) {
 		}
-		else if (config.getProperty("browser").equals("InternetExplorer")||config.getProperty("browser").equalsIgnoreCase("IE")){
-			System.setProperty("webdriver.ie.driver", System.getProperty("user.dir")+ File.separator+"drivers"+ File.separator  +"IEDriverServer.exe");
-			driver = new InternetExplorerDriver();
-			log.info(config.getProperty("browser")+" driver is initialized..");
-		}
-		else if (config.getProperty("browser").equals("GoogleChrome")||config.getProperty("browser").equalsIgnoreCase("CHROME")){
+		
+		DesiredCapabilities dc= new DesiredCapabilities();
+		if (config.getProperty("browser").equals("GoogleChrome")||config.getProperty("browser").equalsIgnoreCase("CHROME")){
 
-			System.setProperty("webdriver.chrome.driver",System.getProperty("user.dir")+ File.separator +"drivers"+ File.separator +"chromedriver");
+			//System.setProperty("webdriver.chrome.driver",System.getProperty("user.dir")+ File.separator +"drivers"+ File.separator +"chromedriver");
 			// To remove message "You are using an unsupported command-line flag: --ignore-certificate-errors.
 			// Stability and security will suffer."
 			// Add an argument 'test-type'
 			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-			ChromeOptions options = new ChromeOptions();
-			options.addArguments("test-type");
-			options.addArguments("--headless", "window-size=1280,1024", "--no-sandbox"); // Enable for headless option
+			//ChromeOptions options = new ChromeOptions();
+			//options.addArguments("test-type");
+			//options.addArguments("--headless", "window-size=1280,1024", "--no-sandbox"); // Enable for headless option
 //			capabilities.setCapability("chrome.binary",System.getProperty("user.dir")+ File.separator +"drivers"+ File.separator +"chromedriver.exe");
-			capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-			driver = new ChromeDriver(capabilities);
-			log.info(config.getProperty("browser")+" driver is initialized..");
-		}else if (config.getProperty("browser").equalsIgnoreCase("htmlunit")) {
-			// http://sourceforge.net/projects/htmlunit/files/htmlunit/
-			driver = new HtmlUnitDriver();
-//			driver = new HtmlUnitDriver(true);
-			log.info(config.getProperty("browser")+" driver is initialized..");
-		} else if(config.getProperty("browser").equalsIgnoreCase("phantomjs")||config.getProperty("browser").equalsIgnoreCase("PHANTOMJS")) {
-			// Requires Phantomjs to be installed and available on PATH
-			//driver = new PhantomJSDriver();
+			//capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+			try {
+				driver = new RemoteWebDriver(hubUrl, capabilities);
+			} catch (WebDriverException e) {
+				if (e.getMessage().contains("Unable to bind")) {
+					try {
+						Thread.sleep(90000);
+						driver =  new RemoteWebDriver(hubUrl, capabilities);
+					} catch (Exception e1) {
+						System.out.println("Error while retrying to intialize webdriver");
+						e1.printStackTrace();
+					}
+				} else {
+					e.printStackTrace();
+				}
+			}
 			log.info(config.getProperty("browser")+" driver is initialized..");
 		}
 
@@ -164,7 +153,7 @@ public abstract class TestBase {
 		driver.manage().window().maximize();
 
 		//Explicit Wait + Expected Conditions
-		wait=new WebDriverWait(driver, 120);
+		wait=new WebDriverWait(driver, 30);
 	}
 	
 	@AfterSuite
@@ -257,5 +246,12 @@ public abstract class TestBase {
 		log.info("Closing Browser.");
 
 	}
+	public void pause(int timeout) {
+		try {
+			Thread.sleep(timeout);
+		} catch (InterruptedException e) {
+		}
+	}
+
 
 }
