@@ -1,0 +1,328 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "Selenium Grid.,",
+	"Parameters": {
+		"InstanceTypeHub": {
+			"Description": "Hub Instance Type",
+			"Type": "String",
+			"Default": "t2.micro",
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		},
+		"InstanceTypeNode": {
+			"Description": "Node Instance Type",
+			"Type": "String",
+			"Default": "t2.micro",
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		},
+		"NodeChromeCount": {
+			"Default": "1",
+			"Description": "No of chrome instances required in Grid",
+			"Type": "String"
+		},
+		"NodeFFCount": {
+			"Default": "0",
+			"Description": "No of FF instances required in Grid",
+			"Type": "String"
+		},
+		"GridAvailabilityZone": {
+			"Default": "us-west-2b",
+			"Description": "Availability Zone",
+			"Type": "String"
+		},
+		"KeyName": {
+			"Default": "Mahesh9",
+			"Description": "KeyName",
+			"Type": "String"
+		}
+	},
+	"Mappings": {
+		"SubnetConfig": {
+			"VPC": {
+				"CIDR": "10.0.0.0/16"
+			},
+			"GridCidr": {
+				"CIDR": "10.0.0.0/24"
+			}
+		}
+	},
+	"Resources": {
+		"VPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"EnableDnsSupport": true,
+				"EnableDnsHostnames": true,
+				"CidrBlock": {
+					"Fn::FindInMap": ["SubnetConfig",
+					"VPC",
+					"CIDR"]
+				}
+			}
+		},
+		"GridSubnet": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"AvailabilityZone": {
+					"Ref": "GridAvailabilityZone"
+				},
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"CidrBlock": {
+					"Fn::FindInMap": ["SubnetConfig",
+					"GridCidr",
+					"CIDR"]
+				},
+				"MapPublicIpOnLaunch": true
+			}
+		},
+		"InternetGateway": {
+			"Type": "AWS::EC2::InternetGateway"
+		},
+		"GatewayAttachement": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "InternetGateway"
+				}
+			}
+		},
+		"PublicRouteTable": {
+			"Type": "AWS::EC2::RouteTable",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				}
+			}
+		},
+		"PublicRoute": {
+			"Type": "AWS::EC2::Route",
+			"DependsOn": "GatewayAttachement",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "PublicRouteTable"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "InternetGateway"
+				}
+			}
+		},
+		"PublicGridRouteTableAssociation": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "GridSubnet"
+				},
+				"RouteTableId": {
+					"Ref": "PublicRouteTable"
+				}
+			}
+		},
+		"HubSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Hub SG",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"SecurityGroupIngress": [{
+					"CidrIp": "0.0.0.0/0",
+					"FromPort" : 4444,
+					"ToPort" : 4444,
+					"IpProtocol": "tcp"
+					
+				},
+				{
+					"CidrIp": "0.0.0.0/0",
+					"FromPort" : 22,
+					"ToPort" : 22,
+					"IpProtocol": "tcp"
+					
+				}]
+			}
+		},
+		"NodeSG": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Node SG",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"SecurityGroupIngress": [{
+					"CidrIp": "0.0.0.0/0",
+					"FromPort" : 22,
+					"ToPort" : 22,
+					"IpProtocol": "tcp"
+					
+				}]
+			}
+		},
+		"HubSGI": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "HubSG"
+				},
+				"IpProtocol": -1,
+				"SourceSecurityGroupId": {
+					"Ref": "NodeSG"
+				}
+			}
+		},
+		"NodeSGI": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "NodeSG"
+				},
+				"IpProtocol": -1,
+				"SourceSecurityGroupId": {
+					"Ref": "HubSG"
+				}
+			}
+		},
+		"Hub": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"ImageId": "ami-06430aeaa80654af1",
+				"InstanceType": {
+					"Ref": "InstanceTypeHub"
+				},
+				"KeyName": {
+					"Ref": "KeyName"
+				},
+				"SecurityGroupIds": [{
+					"Ref": "HubSG"
+				}],
+				"SubnetId": {
+					"Ref": "GridSubnet"
+				},
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["\n",
+						["#!/bin/bash",
+						"sudo docker start selenium-hub"]]
+					}
+				}
+			}
+		},
+		"ChromeLaunchConfig": {
+			"Properties": {
+				"ImageId": "ami-0dfd73fabdba5a0d3",
+				"AssociatePublicIpAddress": "true",
+				"InstanceType": {
+					"Ref": "InstanceTypeNode"
+				},
+				"SecurityGroups": [{
+					"Ref": "NodeSG"
+				}],
+				"KeyName": {
+					"Ref": "KeyName"
+				},
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["",
+						["#!/bin/bash\n",
+						"docker run -d -p 5555:5555 -e HUB_HOST=",
+						{
+							"Fn::GetAtt": ["Hub",
+							"PrivateIp"]
+						},
+						" -e HUB_PORT=4444 -e REMOTE_HOST=\"http://$HOSTNAME:5555\" selenium/node-chrome:3.141.59-mercury"]]
+					}
+				}
+			},
+			"Type": "AWS::AutoScaling::LaunchConfiguration"
+		},
+		"ChromeAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Properties": {
+				"LaunchConfigurationName": {
+					"Ref": "ChromeLaunchConfig"
+				},
+				"MinSize": {
+					"Ref": "NodeChromeCount"
+				},
+				"MaxSize": {
+					"Ref": "NodeChromeCount"
+				},
+				"DesiredCapacity": {
+					"Ref": "NodeChromeCount"
+				},
+				"VPCZoneIdentifier": [{
+					"Ref": "GridSubnet"
+				}]
+			}
+		},
+		"FFLaunchConfig": {
+			"Properties": {
+				"ImageId": "ami-07a189e83dedc8a9d",
+				"AssociatePublicIpAddress": "true",
+				"InstanceType": {
+					"Ref": "InstanceTypeNode"
+				},
+				"SecurityGroups": [{
+					"Ref": "NodeSG"
+				}],
+				"KeyName": {
+					"Ref": "KeyName"
+				},
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["",
+						["#!/bin/bash\n",
+						"docker run -d -p 5555:5555 -e HUB_HOST=",
+						{
+							"Fn::GetAtt": ["Hub",
+							"PrivateIp"]
+						},
+						" -e HUB_PORT=4444 -e REMOTE_HOST=\"http://$HOSTNAME:5555\" selenium/node-firefox:3.141.59-mercury"]]
+					}
+				}
+			},
+			"Type": "AWS::AutoScaling::LaunchConfiguration"
+		},
+		"FFAutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Properties": {
+				"LaunchConfigurationName": {
+					"Ref": "FFLaunchConfig"
+				},
+				"MinSize": {
+					"Ref": "NodeFFCount"
+				},
+				"MaxSize": {
+					"Ref": "NodeFFCount"
+				},
+				"DesiredCapacity": {
+					"Ref": "NodeFFCount"
+				},
+				"VPCZoneIdentifier": [{
+					"Ref": "GridSubnet"
+				}]
+			}
+		}
+	},
+	"Outputs": {
+		"GridUrl": {
+			"Value": {
+				"Fn::Join": ["",
+				["http://",
+				{
+					"Fn::GetAtt": ["Hub",
+					"PublicIp"]
+				},
+				":4444/grid/console"]]
+			}
+		},
+		"HubPrivateIP": {
+			"Value": {
+				"Fn::GetAtt": ["Hub",
+				"PrivateIp"]
+			}
+		}
+	}
+}
