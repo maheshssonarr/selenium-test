@@ -167,7 +167,7 @@ public abstract class TestBase {
  
             JSONObject ex = (JSONObject) obj;
             JSONArray exports = (JSONArray) ex.get("Exports");
-            JSONObject values = (JSONObject) exports.get(0);
+            JSONObject values = (JSONObject) exports.get(1);
             String url = (String) values.get("Value");
             return new URL(url);
              
