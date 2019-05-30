@@ -13,7 +13,7 @@
   },
   {
     "ParameterKey": "NodeFFCount",
-    "ParameterValue": "1"
+    "ParameterValue": "0"
   },
   {
     "ParameterKey": "GridAvailabilityZone",
