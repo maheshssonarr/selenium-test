@@ -1,6 +1,10 @@
 package base;
 
 import org.apache.log4j.xml.DOMConfigurator;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -21,6 +25,7 @@ import org.testng.annotations.AfterSuite;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -110,11 +115,7 @@ public abstract class TestBase {
 	private static void initDriver(){
 
 		URL hubUrl = null;
-		try {
-			hubUrl = new URL("http://localhost:4444/wd/hub");
-		} catch (MalformedURLException e) {
-		}
-		
+		hubUrl = getHubUrl();
 		DesiredCapabilities dc= new DesiredCapabilities();
 		if (config.getProperty("browser").equals("GoogleChrome")||config.getProperty("browser").equalsIgnoreCase("CHROME")){
 
@@ -156,6 +157,30 @@ public abstract class TestBase {
 		wait=new WebDriverWait(driver, 30);
 	}
 	
+	public static URL getHubUrl() {
+		
+		JSONParser jsonParser = new JSONParser();
+		try (FileReader reader = new FileReader("hubU.json"))
+        {
+            //Read JSON file
+            Object obj = jsonParser.parse(reader);
+ 
+            JSONObject ex = (JSONObject) obj;
+            JSONArray exports = (JSONArray) ex.get("Exports");
+            JSONObject values = (JSONObject) exports.get(0);
+            String url = (String) values.get("Value");
+            return new URL(url);
+             
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+		return null;
+	}
+
 	@AfterSuite
 	public void tearDown() {
 		quitDriver();

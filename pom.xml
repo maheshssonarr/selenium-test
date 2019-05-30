@@ -50,7 +50,7 @@
 										<copy file="${project.basedir}\config\config_dev.properties"
 											tofile="${project.basedir}\config\config.properties" />
 										<copy file="${project.basedir}\config\data_dev.properties"
-											  tofile="${project.basedir}\config\data.properties" />
+											tofile="${project.basedir}\config\data.properties" />
 									</target>
 								</configuration>
 							</execution>
@@ -113,9 +113,9 @@
 										<delete file="${project.basedir}\config\config.properties" />
 										<delete file="${project.basedir}\config\data.properties" />
 										<copy file="${project.basedir}\config\config_local.properties"
-											  tofile="${project.basedir}\config\config.properties" />
+											tofile="${project.basedir}\config\config.properties" />
 										<copy file="${project.basedir}\config\data_local.properties"
-											  tofile="${project.basedir}\config\data.properties" />
+											tofile="${project.basedir}\config\data.properties" />
 									</target>
 								</configuration>
 							</execution>
@@ -178,9 +178,9 @@
 										<delete file="${project.basedir}\config\config.properties" />
 										<delete file="${project.basedir}\config\data.properties" />
 										<copy file="${project.basedir}\config\config_stage.properties"
-											  tofile="${project.basedir}\config\config.properties" />
+											tofile="${project.basedir}\config\config.properties" />
 										<copy file="${project.basedir}\config\data_stage.properties"
-											  tofile="${project.basedir}\config\data.properties" />
+											tofile="${project.basedir}\config\data.properties" />
 									</target>
 								</configuration>
 							</execution>
@@ -243,9 +243,9 @@
 										<delete file="${project.basedir}\config\config.properties" />
 										<delete file="${project.basedir}\config\data.properties" />
 										<copy file="${project.basedir}\config\config_qa.properties"
-											  tofile="${project.basedir}\config\config.properties" />
+											tofile="${project.basedir}\config\config.properties" />
 										<copy file="${project.basedir}\config\data_qa.properties"
-											  tofile="${project.basedir}\config\data.properties" />
+											tofile="${project.basedir}\config\data.properties" />
 									</target>
 								</configuration>
 							</execution>
@@ -314,9 +314,9 @@
 										<delete file="${project.basedir}\config\config.properties" />
 										<delete file="${project.basedir}\config\data.properties" />
 										<copy file="${project.basedir}\config\config_prod.properties"
-											  tofile="${project.basedir}\config\config.properties" />
+											tofile="${project.basedir}\config\config.properties" />
 										<copy file="${project.basedir}\config\data_prod.properties"
-											  tofile="${project.basedir}\config\data.properties" />
+											tofile="${project.basedir}\config\data.properties" />
 									</tasks>
 								</configuration>
 							</execution>
@@ -383,7 +383,11 @@
 			<artifactId>selenium-htmlunit-driver</artifactId>
 			<version>2.52.0</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
