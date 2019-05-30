@@ -1,8 +1,26 @@
-[{
-    "InstanceTypeHub": "t2.micro",
-    "InstanceTypeNode": "t2.micro",
-    "NodeChromeCount": "1",
-    "NodeFFCount": "1",
-    "GridAvailabilityZone": "us-west-2b",
-    "KeyName": "Mahesh9"
-}]
+[
+  {
+    "ParameterKey": "InstanceTypeHub",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "InstanceTypeNode",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "NodeChromeCount",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "NodeFFCount",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "GridAvailabilityZone",
+    "ParameterValue": "us-west-2b"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "Mahesh9"
+  }
+]

@@ -317,12 +317,6 @@
 				},
 				":4444/grid/console"]]
 			}
-		},
-		"HubPrivateIP": {
-			"Value": {
-				"Fn::GetAtt": ["Hub",
-				"PrivateIp"]
-			}
 		}
 	}
 }
