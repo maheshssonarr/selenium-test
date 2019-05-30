@@ -318,15 +318,7 @@
 				":4444/grid/console"]]
 			},
 			"Export" : {
-				"GridHubUrl" :  {
-					"Fn::Join": ["",
-					["http://",
-					{
-						"Fn::GetAtt": ["Hub",
-						"PublicIp"]
-					},
-					":4444/grid/console"]]
-				}
+				"Name" : "GridHubUrl"
 			}
 		}
 	}
