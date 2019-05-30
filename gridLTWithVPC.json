@@ -315,7 +315,7 @@
 					"Fn::GetAtt": ["Hub",
 					"PublicIp"]
 				},
-				":4444/grid/console"]]
+				":4444/wd/hub"]]
 			},
 			"Export" : {
 				"Name" : "GridHubUrl"

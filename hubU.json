@@ -1,0 +1,9 @@
+{ 
+    "Exports": [ 
+        { 
+            "ExportingStackId": "arn:aws:cloudformation:us-west-2:797110872385:stack/GridA/0378fe80-830f-11e9-918e-02035744c0fa", 
+            "Name": "GridHubUrl", 
+            "Value": "http://52.36.200.169:4444/grid/console" 
+        } 
+    ] 
+}
