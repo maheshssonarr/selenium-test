@@ -131,20 +131,21 @@ public abstract class TestBase {
 			//capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 			try {
 				driver = new RemoteWebDriver(hubUrl, capabilities);
-			} catch (WebDriverException e) {
-				if (e.getMessage().contains("Unable to bind")) {
+				log.info(config.getProperty("browser")+" driver is initialized..");
+			
+			} catch (Exception e) {
 					try {
-						Thread.sleep(90000);
+						Thread.sleep(60000);
 						driver =  new RemoteWebDriver(hubUrl, capabilities);
+						log.info(config.getProperty("browser")+" driver is initialized..");
+			
 					} catch (Exception e1) {
 						System.out.println("Error while retrying to intialize webdriver");
 						e1.printStackTrace();
 					}
-				} else {
-					e.printStackTrace();
-				}
+				
 			}
-			log.info(config.getProperty("browser")+" driver is initialized..");
+			
 		}
 
 
