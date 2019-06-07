@@ -135,13 +135,13 @@ public abstract class TestBase {
 			
 			} catch (Exception e) {
 					try {
-						System.out.println("Retrying to intialize webdriver");
+						log.warn("Retrying to intialize webdriver");
 						Thread.sleep(60000);
 						driver =  new RemoteWebDriver(hubUrl, capabilities);
 						log.info(config.getProperty("browser")+" driver is initialized..");
 			
 					} catch (Exception e1) {
-						System.out.println("Error while retrying to intialize webdriver");
+						log.warn("Error while retrying to intialize webdriver");
 						e1.printStackTrace();
 					}
 				
